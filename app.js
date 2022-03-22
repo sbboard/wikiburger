@@ -20,13 +20,21 @@ async function main() {
   await page.goto(random);
   const title = await page.evaluate(() => {
     const title = document.querySelector("h1");
-    const titleText = title.innerText.toLowerCase();
-    if (titleText.indexOf("the") == 0) titleText = titleText.replace("the", "");
-    if (titleText.indexOf("list of") == 0)
-      titleText = titleText.replace("list of", "");
+    let titleText = title.innerText;
+    if (titleText.indexOf("The") == 0) titleText = titleText.replace("The", "");
+    if (
+      titleText.indexOf("List of") == 0 ||
+      titleText.indexOf("List Of") == 0
+    ) {
+      titleText = titleText.replace("List of", "");
+      titleText = titleText.replace("List Of", "");
+    }
     if (titleText.indexOf("!") != -1) titleText = titleText.replaceAll("!", "");
     if (titleText.indexOf("?") != -1) titleText = titleText.replaceAll("?", "");
     if (titleText.indexOf(".") != -1) titleText = titleText.replaceAll(".", "");
+    if (titleText.indexOf("(") != -1) {
+      titleText = titleText.split("(")[0].trim();
+    }
     return titleText;
   });
 
@@ -45,18 +53,16 @@ async function main() {
 
   var should =
     Math.random() > 0.9
-      ? ["definitely not", "horrible"]
+      ? ["definitely NOT", "horrible"]
       : ["totally", "awesome"];
+
+  var n = "aeiou".indexOf(title[0].toLowerCase()) != -1 ? "n" : "";
 
   await browser.close();
   console.log(
-    place,
-    "should",
-    should[0],
-    "make a",
-    toTitleCase(title),
-    "Burger! That would be",
-    should[1] + "!"
+    `${place} should ${should[0]} make a${n} ${toTitleCase(
+      title
+    ).trim()} Burger! That would be ${should[1]}!`
   );
 }
 
