@@ -89,9 +89,9 @@ async function main() {
   if (title.img != "NOIMG") {
     await images("burger.png")
       .resize(600, 400)
-      .draw(images("place.png").resize(600, 100),0,0)
+      .draw(images("place.png").resize(300, 100),5,5)
       .draw(images("burg.png").resize(200, 200), 400, 200)
-      .save("output.jpg", { quality: 10 });
+      .save("output.jpg", { quality: 20 });
   }
 
   var should =
