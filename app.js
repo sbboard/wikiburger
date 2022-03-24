@@ -116,6 +116,7 @@ async function main() {
     if (should[0] == "definitely NOT") {
       await images("output.jpg")
         .draw(images("no.png").resize(600, 400), 0, 0)
+        .draw(images("place.png").resize(300, 100), 5, 5)
         .save("output.jpg", { quality: 100 });
     }
     var n = "aeiou".indexOf(title.name[0].toLowerCase()) != -1 ? "n" : "";
