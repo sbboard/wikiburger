@@ -1,6 +1,8 @@
 console.clear();
 
 const puppeteer = require("puppeteer");
+const images = require("images");
+const fs = require("fs");
 
 const random = "https://en.wikipedia.org/wiki/Special:Random";
 const places =
@@ -64,21 +66,50 @@ async function main() {
       : "NOIMG";
   });
 
+  //get images
+  var viewSource = await page.goto(place_img);
+  fs.writeFile("place.png", await viewSource.buffer(), function (err) {
+    if (err) {
+      return console.log(err);
+    }
+  });
+  if (title.img != "NOIMG") {
+    var titleSource = await page.goto(title.img);
+    fs.writeFile("burger.png", await titleSource.buffer(), function (err) {
+      if (err) {
+        return console.log(err);
+      }
+    });
+  } else {
+    console.log("no image");
+  }
+
   await browser.close();
+
+  if (title.img != "NOIMG") {
+    await images("burger.png")
+      .resize(600, 400)
+      .draw(images("place.png").resize(600, 100),0,0)
+      .draw(images("burg.png").resize(200, 200), 400, 200)
+      .save("output.jpg", { quality: 10 });
+  }
 
   var should =
     Math.random() > 0.9
       ? ["definitely NOT", "horrible"]
       : ["totally", "awesome"];
 
+      if(should[0] == "definitely NOT"){
+        await images("output.jpg")
+          .draw(images("no.png").resize(600, 400),0,0)
+          .save("output.jpg", { quality: 100 });
+      }
   var n = "aeiou".indexOf(title.name[0].toLowerCase()) != -1 ? "n" : "";
   console.log(
     `${place.name} should ${should[0]} make a${n} ${toTitleCase(
       title.name
     ).trim()} Burger! That would be ${should[1]}!`
   );
-  console.log(place_img);
-  console.log(title.img);
 }
 
 main();
