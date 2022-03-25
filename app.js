@@ -21,14 +21,21 @@ async function main() {
 
   await page.goto(random);
   const has_image = await page.evaluate(() => {
-    if (document.querySelector("#mw-content-text .infobox img") == null) {
-      return false;
+    var info = {};
+    if (
+      document.querySelector("#mw-content-text .thumbinner img") == null &&
+      document.querySelector(".infobox-image img") == null
+    ) {
+      info.has_image = false;
     } else {
-      return true;
+      info.has_image = true;
     }
+    const title = document.querySelector("h1");
+    info.title = title.innerText;
+    return info;
   });
 
-  if (has_image) {
+  if (has_image.has_image) {
     const title = await page.evaluate(() => {
       let title_obj = {};
       const title = document.querySelector("h1");
@@ -53,8 +60,10 @@ async function main() {
       }
       title_obj.name = titleText;
       title_obj.img =
-        document.querySelector("#mw-content-text .infobox img") != null
-          ? document.querySelector("#mw-content-text .infobox img").src
+        document.querySelector(".infobox-image img") != null
+          ? document.querySelector(".infobox-image img").src
+          : document.querySelector("#mw-content-text .thumbinner img") != null
+          ? document.querySelector("#mw-content-text .thumbinner img").src
           : "NOIMG";
       return title_obj;
     });
@@ -94,24 +103,33 @@ async function main() {
           return console.log(err);
         }
       });
-    } else {
-      console.log("no image");
     }
 
     await browser.close();
 
-    if (title.img != "NOIMG") {
-      await images("burger.png")
-        .resize(600, 400)
-        .draw(images("place.png").resize(300, 100), 5, 5)
-        .draw(images("burg.png").resize(200, 200), 400, 200)
-        .save("output.jpg", { quality: 20 });
-    }
+    //text output
 
     var should =
       Math.random() > 0.9
         ? ["definitely NOT", "horrible"]
         : ["totally", "awesome"];
+
+    var n = "aeiou".indexOf(title.name[0].toLowerCase()) != -1 ? "n" : "";
+    console.log(
+      `${place.name} should ${should[0]} make a${n} ${toTitleCase(
+        title.name
+      ).trim()} Burger! That would be ${should[1]}!`
+    );
+
+    //image output
+    if (title.img != "NOIMG") {
+      await images(600, 400)
+        .fill(0xff, 0xff, 0xff, 1)
+        .draw(images("burger.png").resize(600, 400), 0, 0)
+        .draw(images("place.png").resize(300, 100), 5, 5)
+        .draw(images("burg.png").resize(200, 200), 400, 200)
+        .save("output.jpg", { quality: 20 });
+    }
 
     if (should[0] == "definitely NOT") {
       await images("output.jpg")
@@ -119,14 +137,8 @@ async function main() {
         .draw(images("place.png").resize(300, 100), 5, 5)
         .save("output.jpg", { quality: 100 });
     }
-    var n = "aeiou".indexOf(title.name[0].toLowerCase()) != -1 ? "n" : "";
-    console.log(
-      `${place.name} should ${should[0]} make a${n} ${toTitleCase(
-        title.name
-      ).trim()} Burger! That would be ${should[1]}!`
-    );
   } else {
-    console.log("no image. restarting.")
+    console.log(has_image.title, "- no image. restarting.");
     await browser.close();
     main();
   }
