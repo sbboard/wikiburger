@@ -121,9 +121,8 @@ async function main() {
 
     if (1 == 2) {
       //placeholder
-    }
-    //100-91 - definitely not
-    else if (key > 90) {
+    } else if (key == 1) {
+      //definitely not
       console.log(
         `${place.name} should DEFINITELY NOT make a${n} ${toTitleCase(
           title.name
@@ -133,7 +132,8 @@ async function main() {
         .draw(images("img/no.png").resize(600, 400), 0, 0)
         .draw(images("place.png").resize(300, 100), 5, 5)
         .save("output.jpg", { quality: 100 });
-    } else if (key == 90) {
+    } else if (key == 2) {
+      //tucker carlson breaking announcement
       console.log(
         `BREAKING NEWS: ${place.name} has announced a${n} ${toTitleCase(
           title.name
@@ -146,7 +146,8 @@ async function main() {
         .draw(images("img/news.png").resize(600, 50), 0, 350)
         .draw(images("output.jpg").resize(400, 350), 200, 0)
         .save("output.jpg", { quality: 10 });
-    } else if (key == 89) {
+    } else if (key == 3) {
+      //date
       console.log(
         `"Wow, this ${toTitleCase(
           title.name
@@ -160,7 +161,38 @@ async function main() {
         .draw(images("img/burg.png").resize(200, 200), 200, 200)
         .draw(images("burger.png").resize(200, 50), 200, 300)
         .save("output.jpg", { quality: 20 });
+    } else if (key == 4) {
+      //date
+      console.log(
+        `"This is a stick-up! No one's leaving this ${toTitleCase(
+          place.name
+        ).trim()} until I get my hands on a${n} ${toTitleCase(
+          title.name
+        )} Burger! Now I ain't playin' games! Don't be a wise guy and get grillin before I get WILD!"`
+      );
+      await images(600, 400)
+        .draw(images("img/chef.jpg").resize(200, 400), 0, 0)
+        .draw(images("img/gunman.png").resize(400, 400), 200, 0)
+        .draw(images("place.png").resize(30, 30), 90, 55)
+        .draw(images("img/burg.png").resize(40, 40), 90, 200)
+        .draw(images("burger.png").resize(200, 100), 390, 290)
+        .save("output.jpg", { quality: 20 });
+    } else if (key == 5) {
+      //date
+      console.log(
+        `"So Cloud ❤️, what do you think of the ${toTitleCase(
+          title.name
+        )} Burger I made you? I know it's not as good as the ones they make at ${toTitleCase(
+          place.name
+        ).trim()} but we don't have any of those here at Sector 7."`
+      );
+      await images(600, 400)
+        .draw(images("img/tifa.jpg").resize(600, 400), 0, 0)
+        .draw(images("burger.png").resize(70, 100), 40, 145)
+        .draw(images("img/burg.png").resize(100, 100), 235, 255)
+        .save("output.jpg", { quality: 20 });
     } else {
+      //default
       console.log(
         `${place.name} should total make a${n} ${toTitleCase(
           title.name
