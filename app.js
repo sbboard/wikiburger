@@ -107,35 +107,65 @@ async function main() {
 
     await browser.close();
 
-    //text output
+    //image output pt1
+    await images(600, 400)
+      .fill(0xff, 0xff, 0xff, 1)
+      .draw(images("burger.png").resize(600, 400), 0, 0)
+      .draw(images("place.png").resize(300, 100), 5, 5)
+      .draw(images("img/burg.png").resize(200, 200), 400, 200)
+      .save("output.jpg", { quality: 20 });
 
-    var should =
-      Math.random() > 0.9
-        ? ["definitely NOT", "horrible"]
-        : ["totally", "awesome"];
-
+    //deciding
+    const key = Math.floor(Math.random() * 100) + 1;
     var n = "aeiou".indexOf(title.name[0].toLowerCase()) != -1 ? "n" : "";
-    console.log(
-      `${place.name} should ${should[0]} make a${n} ${toTitleCase(
-        title.name
-      ).trim()} Burger! That would be ${should[1]}!`
-    );
 
-    //image output
-    if (title.img != "NOIMG") {
-      await images(600, 400)
-        .fill(0xff, 0xff, 0xff, 1)
-        .draw(images("burger.png").resize(600, 400), 0, 0)
-        .draw(images("place.png").resize(300, 100), 5, 5)
-        .draw(images("burg.png").resize(200, 200), 400, 200)
-        .save("output.jpg", { quality: 20 });
+    if (1 == 2) {
+      //placeholder
     }
-
-    if (should[0] == "definitely NOT") {
+    //100-91 - definitely not
+    else if (key > 90) {
+      console.log(
+        `${place.name} should DEFINITELY NOT make a${n} ${toTitleCase(
+          title.name
+        ).trim()} Burger! That would be AWFUL!`
+      );
       await images("output.jpg")
-        .draw(images("no.png").resize(600, 400), 0, 0)
+        .draw(images("img/no.png").resize(600, 400), 0, 0)
         .draw(images("place.png").resize(300, 100), 5, 5)
         .save("output.jpg", { quality: 100 });
+    } else if (key == 90) {
+      console.log(
+        `BREAKING NEWS: ${place.name} has announced a${n} ${toTitleCase(
+          title.name
+        ).trim()} Burger! Really? Last time I checked ${
+          title.name
+        } wasn't a type of burger. Guess we can thank Joe Biden for that one.`
+      );
+      await images(600, 400)
+        .draw(images("img/tucker.png").resize(200, 350), 0, 0)
+        .draw(images("img/news.png").resize(600, 50), 0, 350)
+        .draw(images("output.jpg").resize(400, 350), 200, 0)
+        .save("output.jpg", { quality: 10 });
+    } else if (key == 89) {
+      console.log(
+        `"Wow, this ${toTitleCase(
+          title.name
+        ).trim()} Burger is amazing. Thank you so much for taking me to ${
+          place.name
+        } for our anniversary. I never knew I could be this happy..."`
+      );
+      await images(600, 400)
+        .draw(images("img/date.png").resize(600, 400), 0, 0)
+        .draw(images("place.png").resize(150, 100), 10, 10)
+        .draw(images("img/burg.png").resize(200, 200), 200, 200)
+        .draw(images("burger.png").resize(200, 50), 200, 300)
+        .save("output.jpg", { quality: 20 });
+    } else {
+      console.log(
+        `${place.name} should total make a${n} ${toTitleCase(
+          title.name
+        ).trim()} Burger! That would be so cool!`
+      );
     }
   } else {
     console.log(has_image.title, "- no image. restarting.");
