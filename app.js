@@ -191,6 +191,29 @@ async function main() {
         .draw(images("burger.png").resize(70, 100), 40, 145)
         .draw(images("img/burg.png").resize(100, 100), 235, 255)
         .save("output.jpg", { quality: 20 });
+    } else if (key == 6) {
+      //gordon ramsney
+      console.log(
+        `${place.name} should total make a${n} ${toTitleCase(
+          title.name
+        ).trim()} Burger! Even the prince of food - Gordon Ramsay himself would love it!`
+      );
+      await images("output.jpg")
+        .draw(images("img/gordon.png").resize(200, 400), 0, 0)
+        .save("output.jpg", { quality: 100 });
+    } else if (key == 7) {
+      //fat cat
+      console.log(
+        `OH NO! OH NO! MY CAT ATE THE FAMOUS ${place.name.toUpperCase()} ${title.name
+          .trim()
+          .toUpperCase()} BURGER! IT MADE HIM MASSIVE! IT MADE HIM HUGE! MY WIFE IS GOING TO KILL ME! SCREW YOU ${place.name.toUpperCase()}!!!`
+      );
+      await images(600, 400)
+        .draw(images("img/big_cat.jpg").resize(600, 400), 0, 0)
+        .draw(images("burger.png").resize(200, 200), 150, 100)
+        .draw(images("img/burg.png").resize(200, 200), 400, 200)
+        .draw(images("img/crazy_man.png").resize(350, 250), 0, 150)
+        .save("output.jpg", { quality: 20 });
     } else {
       //default
       console.log(
