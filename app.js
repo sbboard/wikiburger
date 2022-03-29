@@ -4,8 +4,15 @@ const puppeteer = require("puppeteer");
 const images = require("images");
 const fs = require("fs");
 
-const random = "https://en.wikipedia.org/wiki/Special:Random";
+const admin = {
+  article: null,
+  restaraunt: null,
+  key: null,
+};
+
+const random = admin.article || "https://en.wikipedia.org/wiki/Special:Random";
 const places =
+  admin.restaraunt ||
   "https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States";
 
 function toTitleCase(str) {
@@ -116,7 +123,7 @@ async function main() {
       .save("output.jpg", { quality: 20 });
 
     //deciding
-    const key = Math.floor(Math.random() * 100) + 1;
+    const key = admin.key || Math.floor(Math.random() * 100) + 1;
     var n = "aeiou".indexOf(title.name[0].toLowerCase()) != -1 ? "n" : "";
 
     if (1 == 2) {
