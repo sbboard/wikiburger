@@ -296,12 +296,11 @@ async function runScript() {
           ).trim()} Burger! That would be so cool!`;
         }
 
-        console.log("message:",msg)
+        console.log("message:", msg);
         await tweet(msg);
       } else {
-        console.log(has_image.title, "- no image. restarting.");
+        console.log(has_image.title, "- no image. oh well.");
         await browser.close();
-        main();
       }
     } catch (error) {
       console.log("ERROR:", error);
