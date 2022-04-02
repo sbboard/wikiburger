@@ -8,12 +8,15 @@ const images = require("images");
 
 let admin = {
   debug: false,
+  view_test: true,
   article: null,
   restaraunt: null,
-  key: null,
+  key: 10,
 };
 
-const random = admin.article || "https://en.wikipedia.org/wiki/Special:Random";
+const random = admin.debug
+  ? admin.article || "https://en.wikipedia.org/wiki/Special:Random"
+  : "https://en.wikipedia.org/wiki/Special:Random";
 const places =
   "https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States";
 
@@ -32,8 +35,6 @@ function tweet(text) {
 
     image_path = path.join(__dirname, "output.jpg");
     b64content = fs.readFileSync(image_path, { encoding: "base64" });
-    console.log("Uploading image...");
-
     T.post(
       "media/upload",
       { media_data: b64content },
@@ -42,9 +43,6 @@ function tweet(text) {
           console.log("ERROR:");
           console.log(err);
         } else {
-          console.log("Uploaded Image!");
-          console.log("Tweeting...");
-
           T.post(
             "statuses/update",
             {
@@ -117,9 +115,6 @@ async function runScript() {
             titleText = titleText.replaceAll("?", "");
           if (titleText.indexOf(".") != -1)
             titleText = titleText.replaceAll(".", "");
-          if (titleText.indexOf("(") != -1) {
-            titleText = titleText.split("(")[0].trim();
-          }
           title_obj.name = titleText;
           title_obj.img =
             document.querySelector(".infobox-image img") != null
@@ -144,7 +139,7 @@ async function runScript() {
           return place_obj;
         });
 
-        if (admin.restaraunt != null) {
+        if (admin.debug && admin.restaraunt != null) {
           place.url = admin.restaraunt;
         }
 
@@ -190,9 +185,14 @@ async function runScript() {
           .save("output.jpg", { quality: 20 });
 
         //deciding
-        const key = admin.key || Math.floor(Math.random() * 100) + 1;
+        const key = admin.debug
+          ? admin.key || Math.floor(Math.random() * 100) + 1
+          : Math.floor(Math.random() * 100) + 1;
         var n = "aeiou".indexOf(title.name[0].toLowerCase()) != -1 ? "n" : "";
 
+        ///////////////////////////////////////
+        // VIEWS //////////////////////////////
+        ///////////////////////////////////////
         if (1 == 2) {
           //placeholder
         } else if (key == 1) {
@@ -284,15 +284,49 @@ async function runScript() {
             .draw(images("img/white.png").resize(275, 330), 3, 140)
             .draw(images("burger.png").resize(275, 330), 3, 140)
             .save("output.jpg", { quality: 10 });
+        } else if (key == 9) {
+          //tarzan
+          msg = `Ooo ooo ah ah! Clayton stole the ${
+            place.name
+          } ${title.name.trim()} Burger from the monkeys! Ooo ooo ah ah!`;
+
+          await images(600, 400)
+            .draw(images("img/monkeys.jpg").resize(700, 400), 0, 0)
+            .draw(images("img/clayton.png").resize(250, 400), 0, 50)
+            .draw(images("burger.png").resize(100, 100), 225, 40)
+            .draw(images("img/burg.png").resize(100, 100), 225, 140)
+            .draw(images("place.png").resize(200, 100), 400, 300)
+            .save("output.jpg", { quality: 20 });
+        } else if (key == 10) {
+          //coupon
+          msg = `GREAT DEAL: FREE ${title.name.trim()} Burger at ${
+            place.name
+          } with the use of coupon. #ad`;
+
+          await images(600, 400)
+            .draw(images("img/coupon.jpg").resize(600, 400), 0, 0)
+            .draw(images("img/burger_text.png").resize(270, 30), 240, 20)
+            .draw(images("img/white.png").resize(590, 200), 0, 100)
+            .draw(images("burger.png").resize(230, 230), 285, 60)
+            .draw(images("img/burg.png").resize(200, 200), 130, 90)
+            .draw(images("img/burg.png").resize(200, 200), 20, 100)
+            .draw(images("img/white.png").resize(90, 100), 500, 290)
+            .draw(images("place.png").resize(90, 100), 500, 295)
+            .save("output.jpg", { quality: 20 });
         } else {
           //default
           msg = `${place.name} should total make a${n} ${toTitleCase(
             title.name
           ).trim()} Burger! That would be so cool!`;
         }
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
 
         console.log("message:", msg);
-        await tweet(msg);
+        if (!admin.view_test && admin.debug) {
+          await tweet(msg);
+        }
       } else {
         console.log(has_image.title, "- no image. oh well.");
         await browser.close();
@@ -303,7 +337,7 @@ async function runScript() {
   }
 }
 
-if (admin.debug == true) {
+if (admin.debug) {
   setInterval(function () {
     runScript();
   }, 10000);
