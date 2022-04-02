@@ -7,15 +7,12 @@ const puppeteer = require("puppeteer");
 const images = require("images");
 
 let admin = {
-  debug: true,
+  debug: false,
   article: null,
   restaraunt: null,
   key: null,
 };
 
-//4 for normal, 1 for hourly
-const hour = 1;
-const minute = 0;
 const random = admin.article || "https://en.wikipedia.org/wiki/Special:Random";
 const places =
   "https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States";
@@ -74,11 +71,9 @@ async function runScript() {
   var time = new Date();
   var h = time.getHours();
   var m = time.getMinutes();
-  if (
-    (h % hour == 0 && parseInt(m) == minute && Math.random() < 0.5) ||
-    admin.debug == true
-  ) {
+  if ((parseInt(h) % 2 == 0 && parseInt(m) == 00) || admin.debug == true) {
     try {
+      console.log("......new session....");
       const browser = await puppeteer.launch();
       //get burger name
       const page = await browser.newPage();
