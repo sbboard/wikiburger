@@ -1,14 +1,12 @@
 const { BskyAgent } = require("@atproto/api");
 var fs = require("fs"),
   path = require("path"),
-  Twit = require("twit"),
   config = require(path.join(__dirname, "config.js"));
-var T = new Twit(config);
 const puppeteer = require("puppeteer");
 const images = require("images");
 
 let admin = {
-  debug: false,
+  debug: true,
   view_test: true,
   article: "",
   restaraunt: "",
@@ -128,22 +126,17 @@ async function runScript() {
       const browser = await puppeteer.launch();
       //get burger name
       const page = await browser.newPage();
-
+      await page.exposeFunction("getImage", getImage);
       await page.goto(random);
       const has_image = await page.evaluate(() => {
-        var info = {
+        const info = {
           has_image: false,
           title: "",
           url: "",
         };
-        if (
-          document.querySelector("#mw-content-text .thumbinner img") == null &&
-          document.querySelector(".infobox-image img") == null
-        ) {
-          info.has_image = false;
-        } else {
-          info.has_image = true;
-        }
+        info.has_image =
+          !!document.querySelector("#mw-content-text .thumbinner img") ||
+          !!document.querySelector(".infobox-image img");
         const title = document.querySelector("h1");
         if (!title) return info;
         info.title = title.innerText;
