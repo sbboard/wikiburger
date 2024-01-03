@@ -1,3 +1,4 @@
+const { BskyAgent } = require("@atproto/api");
 var fs = require("fs"),
   path = require("path"),
   Twit = require("twit"),
@@ -27,49 +28,101 @@ function toTitleCase(str) {
 }
 
 //tweet
-function tweet(text) {
-  return new Promise((resolve) => {
-    let image_path = "";
-    let b64content = "";
-    let msg = text;
+// function tweet(text) {
+//   return new Promise((resolve) => {
+//     let image_path = "";
+//     let b64content = "";
+//     let msg = text;
 
-    image_path = path.join(__dirname, "output.jpg");
-    b64content = fs.readFileSync(image_path, { encoding: "base64" });
-    T.post(
-      "media/upload",
-      { media_data: b64content },
-      function (err, data, response) {
-        if (err) {
-          console.log("ERROR:");
-          console.log(err);
-        } else {
-          T.post(
-            "statuses/update",
-            {
-              media_ids: new Array(data.media_id_string),
-              status: msg,
-            },
-            function (err, data, response) {
-              if (err) {
-                console.log("ERROR:");
-                console.log(err);
-              } else {
-                console.log("Posted!");
-              }
-              resolve();
-            }
-          );
-        }
+//     image_path = path.join(__dirname, "output.jpg");
+//     b64content = fs.readFileSync(image_path, { encoding: "base64" });
+//     T.post(
+//       "media/upload",
+//       { media_data: b64content },
+//       function (err, data, response) {
+//         if (err) {
+//           console.log("ERROR:");
+//           console.log(err);
+//         } else {
+//           T.post(
+//             "statuses/update",
+//             {
+//               media_ids: new Array(data.media_id_string),
+//               status: msg,
+//             },
+//             function (err, data, response) {
+//               if (err) {
+//                 console.log("ERROR:");
+//                 console.log(err);
+//               } else {
+//                 console.log("Posted!");
+//               }
+//               resolve();
+//             }
+//           );
+//         }
+//       }
+//     );
+//   });
+// }
+
+async function imageToInt8Array(imagePath: string) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(imagePath, (err, data) => {
+      if (err) {
+        reject(err);
+        return;
       }
-    );
+      const int8Array = new Int8Array(data);
+      resolve(int8Array);
+    });
   });
+}
+
+function getImage(document) {
+  const d = document;
+  const BI = d.querySelector(".infobox-image img") as HTMLImageElement;
+  const TIquery = "#mw-content-text .thumbinner img";
+  const TI = d.querySelector(TIquery) as HTMLImageElement;
+  return BI ? BI.src : TI ? TI.src : "NOIMG";
+}
+
+async function postBsky(msg: string) {
+  try {
+    const agent = new BskyAgent({ service: "https://bsky.social" });
+    await agent.login(config);
+
+    const imagePath = path.join(__dirname, "output.jpg");
+    const int8Array = await imageToInt8Array(imagePath);
+    const testUpload = await agent.uploadBlob(int8Array, {
+      encoding: "image/png",
+    });
+    await agent.post({
+      text: msg,
+      embed: {
+        images: [
+          {
+            image: testUpload.data.blob,
+            alt: msg,
+          },
+        ],
+        $type: "app.bsky.embed.images",
+      },
+    });
+    console.log(`Posted ${imagePath} to Bluesky`);
+    return true;
+  } catch (e) {
+    console.log("ERROR IN BSKY POSTING");
+    console.log(e);
+    return false;
+  }
 }
 
 async function runScript() {
   var time = new Date();
   var h = time.getHours();
   var m = time.getMinutes();
-  if ((parseInt(h) % 2 == 0 && parseInt(m) == 00) || admin.debug == true) {
+  if ((h % 2 == 0 && m == 0) || admin.debug == true) {
     try {
       console.log("......new session....");
       const browser = await puppeteer.launch();
@@ -78,7 +131,11 @@ async function runScript() {
 
       await page.goto(random);
       const has_image = await page.evaluate(() => {
-        var info = {};
+        var info = {
+          has_image: false,
+          title: "",
+          url: "",
+        };
         if (
           document.querySelector("#mw-content-text .thumbinner img") == null &&
           document.querySelector(".infobox-image img") == null
@@ -88,6 +145,7 @@ async function runScript() {
           info.has_image = true;
         }
         const title = document.querySelector("h1");
+        if (!title) return info;
         info.title = title.innerText;
         info.url = location.href;
         return info;
@@ -97,8 +155,12 @@ async function runScript() {
 
       if (has_image.has_image) {
         const title = await page.evaluate(() => {
-          let title_obj = {};
+          let title_obj = {
+            name: "",
+            img: "",
+          };
           const title = document.querySelector("h1");
+          if (!title) return title_obj;
           let titleText = title.innerText;
           if (titleText.indexOf("The") == 0)
             titleText = titleText.replace("The", "");
@@ -116,26 +178,25 @@ async function runScript() {
           if (titleText.indexOf(".") != -1)
             titleText = titleText.replaceAll(".", "");
           title_obj.name = titleText;
-          title_obj.img =
-            document.querySelector(".infobox-image img") != null
-              ? document.querySelector(".infobox-image img").src
-              : document.querySelector("#mw-content-text .thumbinner img") !=
-                null
-              ? document.querySelector("#mw-content-text .thumbinner img").src
-              : "NOIMG";
+          title_obj.img = getImage(document);
           return title_obj;
         });
 
         //get place
         await page.goto(places);
         const place = await page.evaluate(() => {
-          let place_obj = {};
+          if (!document) return;
+          let place_obj = {
+            name: "",
+            url: "",
+          };
           const rows = document
             .querySelector("#Hamburgers")
             .parentElement.nextElementSibling.querySelectorAll("tr");
           const index = Math.floor(Math.random() * (rows.length - 2)) + 1;
-          place_obj.name = rows[index].querySelector("td a").innerText.trim();
-          place_obj.url = rows[index].querySelector("td a").href;
+          const aEl = rows[index].querySelector("td a") as HTMLAnchorElement;
+          place_obj.name = aEl.innerText.trim();
+          place_obj.url = aEl.href;
           return place_obj;
         });
 
@@ -147,14 +208,7 @@ async function runScript() {
 
         await page.goto(place.url);
         const place_img = await page.evaluate(() => {
-          var return_img =
-            document.querySelector(".infobox-image img") != null
-              ? document.querySelector(".infobox-image img").src
-              : document.querySelector("#mw-content-text .thumbinner img") !=
-                null
-              ? document.querySelector("#mw-content-text .thumbinner img").src
-              : "NOIMG";
-          return return_img;
+          return getImage(document);
         });
 
         //get images
@@ -193,9 +247,8 @@ async function runScript() {
         ///////////////////////////////////////
         // VIEWS //////////////////////////////
         ///////////////////////////////////////
-        if (1 == 2) {
-          //placeholder
-        } else if (key == 1) {
+        let msg = "";
+        if (key == 1) {
           //definitely not
           msg = `${place.name} should DEFINITELY NOT make a${n} ${toTitleCase(
             title.name
@@ -325,7 +378,7 @@ async function runScript() {
 
         console.log("message:", msg);
         if (!admin.view_test && admin.debug) {
-          await tweet(msg);
+          await postBsky(msg);
         }
       } else {
         console.log(has_image.title, "- no image. oh well.");
