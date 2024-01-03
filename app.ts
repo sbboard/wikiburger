@@ -10,8 +10,8 @@ const images = require("images");
 let admin = {
   debug: false,
   view_test: true,
-  article: null,
-  restaraunt: null,
+  article: "",
+  restaraunt: "",
   key: 10,
 };
 
@@ -21,7 +21,7 @@ const random = admin.debug
 const places =
   "https://en.wikipedia.org/wiki/List_of_restaurant_chains_in_the_United_States";
 
-function toTitleCase(str) {
+function toTitleCase(str: string) {
   return str.replace(/\w\S*/g, function (txt) {
     return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
   });
@@ -68,7 +68,7 @@ function toTitleCase(str) {
 
 async function imageToInt8Array(imagePath: string) {
   return new Promise((resolve, reject) => {
-    fs.readFile(imagePath, (err, data) => {
+    fs.readFile(imagePath, (err: any, data: Iterable<number>) => {
       if (err) {
         reject(err);
         return;
@@ -79,7 +79,7 @@ async function imageToInt8Array(imagePath: string) {
   });
 }
 
-function getImage(document) {
+function getImage(document: Document) {
   const d = document;
   const BI = d.querySelector(".infobox-image img") as HTMLImageElement;
   const TIquery = "#mw-content-text .thumbinner img";
@@ -214,19 +214,27 @@ async function runScript() {
         //get images
         if (place_img != "NOIMG") {
           var viewSource = await page.goto(place_img);
-          fs.writeFile("place.png", await viewSource.buffer(), function (err) {
-            if (err) {
-              return console.log(err);
+          fs.writeFile(
+            "place.png",
+            await viewSource.buffer(),
+            function (err: any) {
+              if (err) {
+                return console.log(err);
+              }
             }
-          });
+          );
         }
 
         var titleSource = await page.goto(title.img);
-        fs.writeFile("burger.png", await titleSource.buffer(), function (err) {
-          if (err) {
-            return console.log(err);
+        fs.writeFile(
+          "burger.png",
+          await titleSource.buffer(),
+          function (err: any) {
+            if (err) {
+              return console.log(err);
+            }
           }
-        });
+        );
 
         await browser.close();
 
@@ -390,14 +398,9 @@ async function runScript() {
   }
 }
 
-if (admin.debug) {
-  setInterval(function () {
-    runScript();
-  }, 10000);
-  console.log("admin mode on");
-} else {
-  setInterval(function () {
-    runScript();
-  }, 60000);
-  console.log("normal mode on");
-}
+const intervalTime = admin.debug ? 10000 : 60000;
+setInterval(() => {
+  runScript();
+}, intervalTime);
+const modeMessage = admin.debug ? "admin mode on" : "normal mode on";
+console.log(modeMessage);
